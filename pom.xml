@@ -26,7 +26,7 @@
   <artifactId>org.99soft.trudeau.coloring</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
-  <name>Trudeau - Utilities</name>
+  <name>Trudeau - Coloring</name>
   <description>Graph coloring problem solver implementation.</description>
   <url>http://trudeau.github.io/coloring</url>
 
