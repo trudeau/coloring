@@ -50,7 +50,7 @@ public final class ColoredVertices<V, C>
      * @param v the vertex for which storing the color.
      * @param color the input vertex color.
      */
-    void addColor( V v, C color )
+    public void addColor( V v, C color )
     {
         coloredVertices.put( v, color );
         int idx = usedColor.indexOf( color );
