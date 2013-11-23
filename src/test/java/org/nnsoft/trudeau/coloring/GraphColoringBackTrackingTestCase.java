@@ -16,11 +16,10 @@ package org.nnsoft.trudeau.coloring;
  *   limitations under the License.
  */
 
-import static org.nnsoft.trudeau.connector.GraphPopulator.populate;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.nnsoft.trudeau.coloring.ColoringSolver.coloring;
+import static org.nnsoft.trudeau.connector.GraphPopulator.populate;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
