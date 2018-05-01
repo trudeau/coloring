@@ -1,7 +1,7 @@
 package org.nnsoft.trudeau.coloring;
 
 /*
- *   Copyright 2013 The Trudeau Project
+ *   Copyright 2013 - 2018 The Trudeau Project
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -21,10 +21,9 @@ import java.util.Set;
 /**
  * Builder to specify the set of colors for coloring the graph.
  *
- * @param <V> the Graph vertices type
- * @param <E> the Graph edges type
+ * @param <N> the Graph nodes type
  */
-public interface ColorsBuilder<V, E>
+public interface ColorsBuilder<N>
 {
 
     /**
@@ -34,6 +33,6 @@ public interface ColorsBuilder<V, E>
      * @param colors the set of colors for coloring the graph.
      * @return the coloring algorithm selector.
      */
-    <C> ColoringAlgorithmsSelector<V, E, C> withColors( Set<C> colors );
+    <C> ColoringAlgorithmsSelector<N, C> withColors( Set<C> colors );
 
 }

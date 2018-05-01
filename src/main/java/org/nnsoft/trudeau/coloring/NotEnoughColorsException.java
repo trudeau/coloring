@@ -1,7 +1,7 @@
 package org.nnsoft.trudeau.coloring;
 
 /*
- *   Copyright 2013 The Trudeau Project
+ *   Copyright 2013 - 2018 The Trudeau Project
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -20,15 +20,12 @@ import static java.lang.String.format;
 
 import java.util.Set;
 
-import org.nnsoft.trudeau.api.GraphException;
-
 /**
  * Exception used by Coloring algorithms. Used when there are not enough colors to 
- * color the graph. 
- *
+ * color the graph.
  */
 public class NotEnoughColorsException
-    extends GraphException
+    extends Exception
 {
 
     private static final long serialVersionUID = -8782950517745777605L;

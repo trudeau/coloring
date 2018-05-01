@@ -1,7 +1,7 @@
 package org.nnsoft.trudeau.coloring;
 
 /*
- *   Copyright 2013 The Trudeau Project
+ *   Copyright 2013 - 2018 The Trudeau Project
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -19,19 +19,19 @@ package org.nnsoft.trudeau.coloring;
 /**
  * Builder for selecting the coloring algorithm to perform.
  *
- * @param <V> the Graph vertices type
- * @param <E> the Graph edges type
- * @param <C> the Color vertices type
+ * @param <N> the Graph nodes type
+ * @param <C> the Color nodes type
  */
-public interface ColoringAlgorithmsSelector<V, E, C>
+public interface ColoringAlgorithmsSelector<N, C>
 {
 
     /**
-     * Colors the graph such that no two adjacent vertices share the same color.
+     * Colors the graph such that no two adjacent nodes share the same color.
      *
      * @return The color - vertex association.
      */
-    ColoredVertices<V, C> applyingGreedyAlgorithm();
+    ColoredNodes<N, C> applyingGreedyAlgorithm()
+        throws NotEnoughColorsException;
 
     /**
      * Graph m-coloring algorithm. This algorithm uses a brute-force backtracking
@@ -39,15 +39,17 @@ public interface ColoringAlgorithmsSelector<V, E, C>
      *
      * @return The color - vertex association.
      */
-    ColoredVertices<V, C> applyingBackTrackingAlgorithm();
+    ColoredNodes<N, C> applyingBackTrackingAlgorithm()
+        throws NotEnoughColorsException;
 
     /**
      * Graph m-coloring algorithm. This algorithm uses a brute-force backtracking
      * procedure to find a graph color using a predefined set of colors.
      *
-     * @param partialColoredVertex subset of vertices already colored.
+     * @param partialColoredNodes subset of nodes already colored.
      * @return The color - vertex association.
      */
-    ColoredVertices<V, C> applyingBackTrackingAlgorithm( ColoredVertices<V, C> partialColoredVertex );
+    ColoredNodes<N, C> applyingBackTrackingAlgorithm( ColoredNodes<N, C> partialColoredNodes )
+        throws NotEnoughColorsException;
 
 }

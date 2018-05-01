@@ -1,7 +1,7 @@
 package org.nnsoft.trudeau.coloring;
 
 /*
- *   Copyright 2013 The Trudeau Project
+ *   Copyright 2013 - 2018 The Trudeau Project
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package org.nnsoft.trudeau.coloring;
  *   limitations under the License.
  */
 
-import static org.nnsoft.trudeau.utils.Assertions.checkNotNull;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,20 +26,20 @@ import java.util.Map;
 /**
  * Maintains the color for each vertex and the required number of colors for {@link org.nnsoft.trudeau.Graph} coloring.
  *
- * @param <V> the Graph vertices type.
+ * @param <N> the Graph nodes type.
  * @param <C> the Color type.
  */
-public final class ColoredVertices<V, C>
+public final class ColoredNodes<N, C>
 {
 
-    private final Map<V, C> coloredVertices = new HashMap<V, C>();
+    private final Map<N, C> coloredNodes = new HashMap<N, C>();
 
     private final List<C> usedColor = new ArrayList<C>();
 
     /**
      * This class can be instantiated only inside the package
      */
-    ColoredVertices()
+    ColoredNodes()
     {
         // do nothing
     }
@@ -47,12 +47,12 @@ public final class ColoredVertices<V, C>
     /**
      * Store the input vertex color.
      *
-     * @param v the vertex for which storing the color.
+     * @param node the vertex for which storing the color.
      * @param color the input vertex color.
      */
-    public void addColor( V v, C color )
+    public void addColor( N node, C color )
     {
-        coloredVertices.put( v, color );
+        coloredNodes.put( node, color );
         int idx = usedColor.indexOf( color );
         if ( idx == -1 )
         {
@@ -67,25 +67,25 @@ public final class ColoredVertices<V, C>
     /**
      * Remove the input vertex color.
      *
-     * @param v the vertex for which storing the color.
+     * @param node the vertex for which storing the color.
      */
-    void removeColor( V v )
+    void removeColor( N node )
     {
-        C color = coloredVertices.remove( v );
+        C color = coloredNodes.remove( node );
         usedColor.remove( color );
     }
 
     /**
      * Returns the color associated to the input vertex.
      *
-     * @param v the vertex for which getting the color.
+     * @param node the vertex for which getting the color.
      * @return the color associated to the input vertex.
      */
-    public C getColor( V v )
+    public C getColor( N node )
     {
-        v = checkNotNull( v, "Impossible to get the color for a null Vertex" );
+        node = checkNotNull( node, "Impossible to get the color for a null Vertex" );
 
-        return coloredVertices.get( v );
+        return coloredNodes.get( node );
     }
 
     /**
@@ -99,14 +99,14 @@ public final class ColoredVertices<V, C>
     }
 
     /**
-     * Tests if the 'vertex' is colored.
+     * Tests if the input node is colored.
      * 
-     * @param vertex the vertex 
-     * @return true if the colored vertex is contained into the map, false otherwise
+     * @param node the node 
+     * @return true if the colored node is contained into the map, false otherwise
      */
-    public boolean containsColoredVertex( V vertex )
+    public boolean containsColoredNode( N node )
     {
-        return coloredVertices.containsKey( vertex );
+        return coloredNodes.containsKey( node );
     }
 
 }

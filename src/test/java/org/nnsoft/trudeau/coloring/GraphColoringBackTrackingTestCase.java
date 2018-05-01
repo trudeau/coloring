@@ -1,7 +1,7 @@
 package org.nnsoft.trudeau.coloring;
 
 /*
- *   Copyright 2013 The Trudeau Project
+ *   Copyright 2013 - 2018 The Trudeau Project
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -19,19 +19,16 @@ package org.nnsoft.trudeau.coloring;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.nnsoft.trudeau.coloring.ColoringSolver.coloring;
-import static org.nnsoft.trudeau.connector.GraphPopulator.populate;
+import static org.nnsoft.trudeau.connector.GraphConnector.populate;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.logging.Logger;
 
 import org.junit.Test;
-import org.nnsoft.trudeau.api.UndirectedGraph;
-import org.nnsoft.trudeau.connector.AbstractGraphConnection;
-import org.nnsoft.trudeau.inmemory.UndirectedMutableGraph;
-import org.nnsoft.trudeau.inmemory.labeled.BaseLabeledEdge;
-import org.nnsoft.trudeau.inmemory.labeled.BaseLabeledVertex;
-import org.nnsoft.trudeau.inmemory.labeled.BaseLabeledWeightedEdge;
+import org.nnsoft.trudeau.connector.AbstractMutableGraphConnection;
+
+import com.google.common.graph.GraphBuilder;
+import com.google.common.graph.MutableGraph;
 
 /**
  *
@@ -42,137 +39,147 @@ public class GraphColoringBackTrackingTestCase
 
     @Test( expected = NullPointerException.class )
     public void testNullGraph()
+        throws NotEnoughColorsException
     {
-        coloring( (UndirectedGraph<BaseLabeledVertex, BaseLabeledWeightedEdge<Double>>) null ).withColors( null ).applyingBackTrackingAlgorithm();
+        coloring( null ).withColors( null ).applyingBackTrackingAlgorithm();
     }
 
     @Test( expected = NullPointerException.class )
     public void testNullColorGraph()
+        throws NotEnoughColorsException
     {
-        UndirectedMutableGraph<BaseLabeledVertex, BaseLabeledEdge> g =
-            new UndirectedMutableGraph<BaseLabeledVertex, BaseLabeledEdge>();
+        MutableGraph<String> g =
+            GraphBuilder.undirected().build();
         coloring( g ).withColors( null ).applyingBackTrackingAlgorithm();
     }
 
     @Test
     public void testEmptyGraph()
+        throws NotEnoughColorsException
     {
-        UndirectedMutableGraph<BaseLabeledVertex, BaseLabeledEdge> g =
-            new UndirectedMutableGraph<BaseLabeledVertex, BaseLabeledEdge>();
+        MutableGraph<String> g =
+            GraphBuilder.undirected().build();
 
-        ColoredVertices<BaseLabeledVertex, Integer> coloredVertices =
+        ColoredNodes<String, Integer> coloredNodes =
             coloring( g ).withColors( createColorsList( 1 ) ).applyingBackTrackingAlgorithm();
-        assertNotNull( coloredVertices );
-        assertEquals( 0, coloredVertices.getRequiredColors() );
+        assertNotNull( coloredNodes );
+        assertEquals( 0, coloredNodes.getRequiredColors() );
     }
 
-    @Test(expected=NotEnoughColorsException.class)
+    @Test( expected = NotEnoughColorsException.class )
     public void testNotEnoughtColorGraph()
         throws NotEnoughColorsException
     {
-        final BaseLabeledVertex two = new BaseLabeledVertex( "2" );
+        final String two = "2";
 
-        UndirectedMutableGraph<BaseLabeledVertex, BaseLabeledEdge> g =
-        populate( new UndirectedMutableGraph<BaseLabeledVertex, BaseLabeledEdge>() )
-        .withConnections( new AbstractGraphConnection<BaseLabeledVertex, BaseLabeledEdge>()
+        MutableGraph<String> g = GraphBuilder.undirected().build();
+
+        populate( g )
+        .withConnections( new AbstractMutableGraphConnection<String>()
         {
 
             @Override
             public void connect()
             {
-                BaseLabeledVertex one = addVertex( new BaseLabeledVertex( "1" ) );
-                addVertex( two );
-                BaseLabeledVertex three = addVertex( new BaseLabeledVertex( "3" ) );
+                String one = addNode( "1" );
+                addNode( two );
+                String three = new String( "3" );
 
-                addEdge( new BaseLabeledEdge( "1 -> 2" ) ).from( one ).to( two );
-                addEdge( new BaseLabeledEdge( "2 -> 3" ) ).from( two ).to( three );
-                addEdge( new BaseLabeledEdge( "3 -> 1" ) ).from( three ).to( one );
-                }
+                connect( one ).to( two );
+                connect( two ).to( three );
+                connect( three ).to( one );
+            }
 
         } );
+
         coloring( g ).withColors( createColorsList( 1 ) ).applyingBackTrackingAlgorithm();
     }
 
     @Test
     public void testCromaticNumber()
+        throws NotEnoughColorsException
     {
-        final BaseLabeledVertex two = new BaseLabeledVertex( "2" );
+        final String two = new String( "2" );
 
-        UndirectedMutableGraph<BaseLabeledVertex, BaseLabeledEdge> g =
-        populate( new UndirectedMutableGraph<BaseLabeledVertex, BaseLabeledEdge>() )
-        .withConnections( new AbstractGraphConnection<BaseLabeledVertex, BaseLabeledEdge>()
+        MutableGraph<String> g = GraphBuilder.undirected().build();
+
+        populate( g )
+        .withConnections( new AbstractMutableGraphConnection<String>()
         {
 
             @Override
             public void connect()
             {
-                BaseLabeledVertex one = addVertex( new BaseLabeledVertex( "1" ) );
-                addVertex( two );
-                BaseLabeledVertex three = addVertex( new BaseLabeledVertex( "3" ) );
+                String one = addNode( new String( "1" ) );
+                addNode( two );
+                String three = addNode( new String( "3" ) );
 
-                addEdge( new BaseLabeledEdge( "1 -> 2" ) ).from( one ).to( two );
-                addEdge( new BaseLabeledEdge( "2 -> 3" ) ).from( two ).to( three );
-                addEdge( new BaseLabeledEdge( "3 -> 1" ) ).from( three ).to( one );
+                connect( one ).to( two );
+                connect( two ).to( three );
+                connect( three ).to( one );
             }
 
         } );
 
-        ColoredVertices<BaseLabeledVertex, Integer> coloredVertex = new ColoredVertices<BaseLabeledVertex, Integer>();
+        ColoredNodes<String, Integer> coloredVertex = new ColoredNodes<String, Integer>();
         coloredVertex.addColor( two, 2 );
 
-        ColoredVertices<BaseLabeledVertex, Integer> coloredVertices =
+        ColoredNodes<String, Integer> coloredNodes =
             coloring( g ).withColors( createColorsList( 3 ) ).applyingBackTrackingAlgorithm( coloredVertex );
-        assertNotNull( coloredVertices );
-        assertEquals( 3, coloredVertices.getRequiredColors() );
-        assertEquals( new Integer( 2 ), coloredVertices.getColor( two ) );
-        checkColoring( g, coloredVertices );
+        assertNotNull( coloredNodes );
+        assertEquals( 3, coloredNodes.getRequiredColors() );
+        assertEquals( new Integer( 2 ), coloredNodes.getColor( two ) );
+        checkColoring( g, coloredNodes );
     }
 
     @Test
     public void testCromaticNumberComplete()
+        throws NotEnoughColorsException
     {
-        UndirectedMutableGraph<BaseLabeledVertex, BaseLabeledEdge> g1 =
-            new UndirectedMutableGraph<BaseLabeledVertex, BaseLabeledEdge>();
+        MutableGraph<String> g1 =
+            GraphBuilder.undirected().build();
 
         buildCompleteGraph( 100, g1 );
 
-        ColoredVertices<BaseLabeledVertex, Integer> coloredVertices =
+        ColoredNodes<String, Integer> coloredNodes =
             coloring( g1 ).withColors( createColorsList( 100 ) ).applyingBackTrackingAlgorithm();
-        assertNotNull( coloredVertices );
-        assertEquals( 100, coloredVertices.getRequiredColors() );
-        checkColoring( g1, coloredVertices );
+        assertNotNull( coloredNodes );
+        assertEquals( 100, coloredNodes.getRequiredColors() );
+        checkColoring( g1, coloredNodes );
     }
 
     @Test
     public void testCromaticNumberBiparted()
+        throws NotEnoughColorsException
     {
-        UndirectedMutableGraph<BaseLabeledVertex, BaseLabeledEdge> g1 =
-            new UndirectedMutableGraph<BaseLabeledVertex, BaseLabeledEdge>();
+        MutableGraph<String> g1 =
+            GraphBuilder.undirected().build();
 
         buildBipartedGraph( 100, g1 );
 
-        ColoredVertices<BaseLabeledVertex, Integer> coloredVertices =
+        ColoredNodes<String, Integer> coloredNodes =
             coloring( g1 ).withColors( createColorsList( 2 ) ).applyingBackTrackingAlgorithm();
-        assertNotNull( coloredVertices );
-        assertEquals( 2, coloredVertices.getRequiredColors() );
-        checkColoring( g1, coloredVertices );
+        assertNotNull( coloredNodes );
+        assertEquals( 2, coloredNodes.getRequiredColors() );
+        checkColoring( g1, coloredNodes );
     }
 
     @Test
     public void testCromaticNumberSparseGraph()
+        throws NotEnoughColorsException
     {
-        UndirectedMutableGraph<BaseLabeledVertex, BaseLabeledEdge> g1 =
-            new UndirectedMutableGraph<BaseLabeledVertex, BaseLabeledEdge>();
+        MutableGraph<String> g1 =
+            GraphBuilder.undirected().build();
         for ( int i = 0; i < 100; i++ )
         {
-            g1.addVertex( new BaseLabeledVertex( String.valueOf( i ) ) );
+            g1.addNode( String.valueOf( i ) );
         }
 
-        ColoredVertices<BaseLabeledVertex, Integer> coloredVertices =
+        ColoredNodes<String, Integer> coloredNodes =
             coloring( g1 ).withColors( createColorsList( 1 ) ).applyingBackTrackingAlgorithm();
-        assertNotNull( coloredVertices );
-        assertEquals( 1, coloredVertices.getRequiredColors() );
-        checkColoring( g1, coloredVertices );
+        assertNotNull( coloredNodes );
+        assertEquals( 1, coloredNodes.getRequiredColors() );
+        checkColoring( g1, coloredNodes );
     }
 
     /**
@@ -180,28 +187,29 @@ public class GraphColoringBackTrackingTestCase
      */
     @Test
     public void testCrawnGraph()
+        throws NotEnoughColorsException
     {
-        UndirectedMutableGraph<BaseLabeledVertex, BaseLabeledEdge> g =
-            new UndirectedMutableGraph<BaseLabeledVertex, BaseLabeledEdge>();
+        MutableGraph<String> g =
+            GraphBuilder.undirected().build();
 
         buildCrownGraph( 6, g );
 
-        ColoredVertices<BaseLabeledVertex, Integer> coloredVertices =
+        ColoredNodes<String, Integer> coloredNodes =
             coloring( g ).withColors( createColorsList( 2 ) ).applyingBackTrackingAlgorithm();
-        assertNotNull( coloredVertices );
-        assertEquals( 2, coloredVertices.getRequiredColors() );
-        checkColoring( g, coloredVertices );
+        assertNotNull( coloredNodes );
+        assertEquals( 2, coloredNodes.getRequiredColors() );
+        checkColoring( g, coloredNodes );
     }
 
     @Test
     public void testSudoku()
         throws Exception
     {
-        UndirectedMutableGraph<BaseLabeledVertex, BaseLabeledEdge> g1 =
-            new UndirectedMutableGraph<BaseLabeledVertex, BaseLabeledEdge>();
-        BaseLabeledVertex[][] grid = buildSudokuGraph( g1 );
+        MutableGraph<String> g1 =
+            GraphBuilder.undirected().build();
+        String[][] grid = buildSudokuGraph( g1 );
 
-        ColoredVertices<BaseLabeledVertex, Integer> sudoku =
+        ColoredNodes<String, Integer> sudoku =
             coloring( g1 ).withColors( createColorsList( 9 ) ).applyingBackTrackingAlgorithm();
         assertNotNull( sudoku );
         checkColoring( g1, sudoku );
@@ -219,23 +227,23 @@ public class GraphColoringBackTrackingTestCase
             }
             sb.append( "\n" );
         }
-        Logger.getAnonymousLogger().fine( sb.toString() );
+        System.out.println( sb.toString() );
     }
 
     @Test
     public void testSudokuWithConstraints()
         throws Exception
     {
-        UndirectedMutableGraph<BaseLabeledVertex, BaseLabeledEdge> g1 =
-            new UndirectedMutableGraph<BaseLabeledVertex, BaseLabeledEdge>();
-        BaseLabeledVertex[][] grid = buildSudokuGraph( g1 );
+        MutableGraph<String> g1 =
+            GraphBuilder.undirected().build();
+        String[][] grid = buildSudokuGraph( g1 );
 
-        ColoredVertices<BaseLabeledVertex, Integer> predefinedColor = new ColoredVertices<BaseLabeledVertex, Integer>();
+        ColoredNodes<String, Integer> predefinedColor = new ColoredNodes<String, Integer>();
         predefinedColor.addColor( grid[0][0], 1 );
         predefinedColor.addColor( grid[5][5], 8 );
         predefinedColor.addColor( grid[1][2], 5 );
 
-        ColoredVertices<BaseLabeledVertex, Integer> sudoku =
+        ColoredNodes<String, Integer> sudoku =
             coloring( g1 ).withColors( createColorsList( 9 ) ).applyingBackTrackingAlgorithm( predefinedColor );
         assertNotNull( sudoku );
         checkColoring( g1, sudoku );
@@ -259,7 +267,7 @@ public class GraphColoringBackTrackingTestCase
             }
             sb.append( "\n" );
         }
-        Logger.getAnonymousLogger().fine( sb.toString() );
+        System.out.println( sb.toString() );
     }
 
 }

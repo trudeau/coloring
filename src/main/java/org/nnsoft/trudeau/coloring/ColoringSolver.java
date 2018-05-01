@@ -1,7 +1,7 @@
 package org.nnsoft.trudeau.coloring;
 
 /*
- *   Copyright 2013 The Trudeau Project
+ *   Copyright 2013 - 2018 The Trudeau Project
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -16,9 +16,10 @@ package org.nnsoft.trudeau.coloring;
  *   limitations under the License.
  */
 
-import static org.nnsoft.trudeau.utils.Assertions.checkNotNull;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
-import org.nnsoft.trudeau.api.UndirectedGraph;
+import com.google.common.graph.Graph;
 
 public final class ColoringSolver
 {
@@ -31,16 +32,16 @@ public final class ColoringSolver
     /**
      * Create a color builder.
      *
-     * @param <V> the Graph vertices type
-     * @param <E> the Graph edges type
+     * @param <N> the Graph nodes type
      * @param <G> the Graph type
      * @param graph the input graph
      * @return an instance of {@link ColorsBuilder}
      */
-    public static <V, E, G extends UndirectedGraph<V, E>> ColorsBuilder<V, E> coloring( G graph )
+    public static <N, G extends Graph<N>> ColorsBuilder<N> coloring( G graph )
     {
-        graph = checkNotNull( graph, "Coloring can not be calculated on null graph"  );
-        return new DefaultColorsBuilder<V, E>( graph );
+        graph = checkNotNull( graph, "Coloring can not be calculated on null graph." );
+        checkArgument( !graph.isDirected(), "Graph coloring algorithms do not work with directed graphs." );
+        return new DefaultColorsBuilder<N>( graph );
     }
 
 }

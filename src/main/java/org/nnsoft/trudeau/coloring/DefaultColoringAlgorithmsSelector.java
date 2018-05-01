@@ -1,7 +1,7 @@
 package org.nnsoft.trudeau.coloring;
 
 /*
- *   Copyright 2013 The Trudeau Project
+ *   Copyright 2013 - 2018 The Trudeau Project
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -16,53 +16,53 @@ package org.nnsoft.trudeau.coloring;
  *   limitations under the License.
  */
 
-import static org.nnsoft.trudeau.utils.Assertions.checkNotNull;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.nnsoft.trudeau.api.UndirectedGraph;
+import com.google.common.graph.Graph;
 
 /**
  * {@link ColoringAlgorithmsSelector} implementation.
  *
- * @param <V> the Graph vertices type
- * @param <E> the Graph edges type
- * @param <C> the Color vertices type
+ * @param <N> the Graph nodes type
+ * @param <C> the Color nodes type
  */
-final class DefaultColoringAlgorithmsSelector<V, E, C>
-    implements ColoringAlgorithmsSelector<V, E, C>
+final class DefaultColoringAlgorithmsSelector<N, C>
+    implements ColoringAlgorithmsSelector<N, C>
 {
 
-    private final UndirectedGraph<V, E> g;
+    private final Graph<N> graph;
 
     private final Set<C> colors;
 
-    public DefaultColoringAlgorithmsSelector( UndirectedGraph<V, E> g, Set<C> colors )
+    public DefaultColoringAlgorithmsSelector( Graph<N> graph, Set<C> colors )
     {
-        this.g = g;
+        this.graph = graph;
         this.colors = colors;
     }
 
     /**
      * {@inheritDoc}
      */
-    public ColoredVertices<V, C> applyingGreedyAlgorithm()
+    public ColoredNodes<N, C> applyingGreedyAlgorithm()
+        throws NotEnoughColorsException
     {
-        final ColoredVertices<V, C> coloredVertices = new ColoredVertices<V, C>();
+        final ColoredNodes<N, C> coloredNodes = new ColoredNodes<N, C>();
 
-        // decreasing sorting all vertices by degree.
-        final UncoloredOrderedVertices<V> uncoloredOrderedVertices = new UncoloredOrderedVertices<V>();
+        // decreasing sorting all nodes by degree.
+        final UncoloredOrderedNodes<N> uncoloredOrderedNodes = new UncoloredOrderedNodes<N>();
 
-        for ( V v : g.getVertices() )
+        for ( N node : graph.nodes() )
         {
-            uncoloredOrderedVertices.addVertexDegree( v, g.getDegree( v ) );
+            uncoloredOrderedNodes.addVertexDegree( node, graph.degree( node ) );
         }
 
         // search coloring
-        Iterator<V> it = uncoloredOrderedVertices.iterator();
+        Iterator<N> it = uncoloredOrderedNodes.iterator();
         Iterator<C> colorsIt = colors.iterator();
         while ( it.hasNext() )
         {
@@ -73,67 +73,69 @@ final class DefaultColoringAlgorithmsSelector<V, E, C>
             C color = colorsIt.next();
 
             // this list contains all vertex colors with the current color.
-            List<V> currentColorVertices = new ArrayList<V>();
-            Iterator<V> uncoloredVtxIterator = uncoloredOrderedVertices.iterator();
-            while ( uncoloredVtxIterator.hasNext() )
+            List<N> currentColorNodes = new ArrayList<N>();
+            Iterator<N> uncoloredNodesIterator = uncoloredOrderedNodes.iterator();
+            while ( uncoloredNodesIterator.hasNext() )
             {
-                V uncoloredVtx = uncoloredVtxIterator.next();
+                N uncoloredNode = uncoloredNodesIterator.next();
 
-                boolean foundAnAdjacentVertex = false;
-                for ( V currentColoredVtx : currentColorVertices )
+                boolean foundAnAdjacentNode = false;
+                for ( N currentColoredNode : currentColorNodes )
                 {
-                    if ( g.getEdge( currentColoredVtx, uncoloredVtx ) != null )
+                    if ( graph.hasEdgeConnecting( currentColoredNode, uncoloredNode ) )
                     {
                         // we've found that 'uncoloredVtx' is adiacent to
                         // 'currentColoredVtx'
-                        foundAnAdjacentVertex = true;
+                        foundAnAdjacentNode = true;
                         break;
                     }
                 }
 
-                if ( !foundAnAdjacentVertex )
+                if ( !foundAnAdjacentNode )
                 {
                     // It's possible to color the vertex 'uncoloredVtx', it has
                     // no connected vertex into
                     // 'currentcoloredvtx'
-                    uncoloredVtxIterator.remove();
-                    coloredVertices.addColor( uncoloredVtx, color );
-                    currentColorVertices.add( uncoloredVtx );
+                    uncoloredNodesIterator.remove();
+                    coloredNodes.addColor( uncoloredNode, color );
+                    currentColorNodes.add( uncoloredNode );
                 }
             }
 
-            it = uncoloredOrderedVertices.iterator();
+            it = uncoloredOrderedNodes.iterator();
         }
 
-        return coloredVertices;
+        return coloredNodes;
     }
 
     /**
      * {@inheritDoc}
      */
-    public ColoredVertices<V, C> applyingBackTrackingAlgorithm()
+    public ColoredNodes<N, C> applyingBackTrackingAlgorithm()
+        throws NotEnoughColorsException
     {
-        return applyingBackTrackingAlgorithm( new ColoredVertices<V, C>() );
+        return applyingBackTrackingAlgorithm( new ColoredNodes<N, C>() );
     }
 
     /**
      * {@inheritDoc}
      */
-    public ColoredVertices<V, C> applyingBackTrackingAlgorithm( ColoredVertices<V, C> partialColoredVertex )
+    public ColoredNodes<N, C> applyingBackTrackingAlgorithm( ColoredNodes<N, C> partialColoredVertex )
+        throws NotEnoughColorsException
     {
         partialColoredVertex = checkNotNull( partialColoredVertex, "PartialColoredVertex must be not null" );
 
-        final List<V> verticesList = new ArrayList<V>();
+        final List<N> nodesList = new ArrayList<N>();
 
-        for ( V v : g.getVertices() )
+        for ( N node : graph.nodes() )
         {
-            if ( !partialColoredVertex.containsColoredVertex( v ) )
+            if ( !partialColoredVertex.containsColoredNode( node ) )
             {
-                verticesList.add( v );
+                nodesList.add( node );
             }
         }
 
-        if ( backtraking( -1, verticesList, partialColoredVertex ) )
+        if ( backtraking( -1, nodesList, partialColoredVertex ) )
         {
             return partialColoredVertex;
         }
@@ -148,56 +150,57 @@ final class DefaultColoringAlgorithmsSelector<V, E, C>
      * @param element the element
      * @return true if there is a valid coloring for the graph, false otherwise.
      */
-    private boolean backtraking( int currentVertexIndex, List<V> verticesList, ColoredVertices<V, C> coloredVertices )
+    private boolean backtraking( int currentVertexIndex, List<N> nodesList, ColoredNodes<N, C> coloredNodes )
     {
         if ( currentVertexIndex != -1
-                        && isThereColorConflict( verticesList.get( currentVertexIndex ), coloredVertices ) )
+                        && isThereColorConflict( nodesList.get( currentVertexIndex ), coloredNodes ) )
         {
             return false;
         }
 
-        if ( currentVertexIndex == verticesList.size() - 1 )
+        if ( currentVertexIndex == nodesList.size() - 1 )
         {
             return true;
         }
 
         int next = currentVertexIndex + 1;
-        V nextVertex = verticesList.get( next );
+        N nextNode = nodesList.get( next );
         for ( C color : colors )
         {
-            coloredVertices.addColor( nextVertex, color );
-            boolean isDone = backtraking( next, verticesList, coloredVertices );
+            coloredNodes.addColor( nextNode, color );
+            boolean isDone = backtraking( next, nodesList, coloredNodes );
             if ( isDone )
             {
                 return true;
             }
         }
-        coloredVertices.removeColor( nextVertex );
+        coloredNodes.removeColor( nextNode );
         return false;
     }
 
     /**
-     * Tests if there is some adjacent vertices with the same color.
+     * Tests if there is some adjacent nodes with the same color.
      *
-     * @param currentVertex
+     * @param currentNode
      * @return
      */
-    private boolean isThereColorConflict( V currentVertex, ColoredVertices<V, C> coloredVertices )
+    private boolean isThereColorConflict( N currentNode, ColoredNodes<N, C> coloredNodes )
     {
-        if ( currentVertex == null )
-        {
-            return false;
-        }
-        C nextVertecColor = coloredVertices.getColor( currentVertex );
-        if ( nextVertecColor == null )
+        if ( currentNode == null )
         {
             return false;
         }
 
-        for ( V abj : g.getConnectedVertices( currentVertex ) )
+        C nextNodeColor = coloredNodes.getColor( currentNode );
+        if ( nextNodeColor == null )
         {
-            C adjColor = coloredVertices.getColor( abj );
-            if ( adjColor != null && nextVertecColor.equals( adjColor ) )
+            return false;
+        }
+
+        for ( N abj : graph.adjacentNodes( currentNode ) )
+        {
+            C adjColor = coloredNodes.getColor( abj );
+            if ( adjColor != null && nextNodeColor.equals( adjColor ) )
             {
                 return true;
             }

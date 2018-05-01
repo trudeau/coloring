@@ -1,7 +1,7 @@
 package org.nnsoft.trudeau.coloring;
 
 /*
- *   Copyright 2013 The Trudeau Project
+ *   Copyright 2013 - 2018 The Trudeau Project
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -16,29 +16,28 @@ package org.nnsoft.trudeau.coloring;
  *   limitations under the License.
  */
 
-import static org.nnsoft.trudeau.utils.Assertions.checkNotNull;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Set;
 
-import org.nnsoft.trudeau.api.UndirectedGraph;
+import com.google.common.graph.Graph;
 
 /**
  * {@link ColorsBuilder} implementation
  *
- * @param <V> the Graph vertices type
- * @param <E> the Graph edges type
+ * @param <N> the Graph nodes type
  */
-final class DefaultColorsBuilder<V, E>
-    implements ColorsBuilder<V, E>
+final class DefaultColorsBuilder<N>
+    implements ColorsBuilder<N>
 {
 
-    private final UndirectedGraph<V, E> graph;
+    private final Graph<N> graph;
 
     /**
      * Creates a new instance of {@link DefaultColorsBuilder} for the input graph.
      * @param graph the graph
      */
-    public DefaultColorsBuilder( UndirectedGraph<V, E> graph )
+    public DefaultColorsBuilder( Graph<N> graph )
     {
         this.graph = graph;
     }
@@ -46,10 +45,10 @@ final class DefaultColorsBuilder<V, E>
     /**
      * {@inheritDoc}
      */
-    public <C> ColoringAlgorithmsSelector<V, E, C> withColors( Set<C> colors )
+    public <C> ColoringAlgorithmsSelector<N, C> withColors( Set<C> colors )
     {
         colors = checkNotNull( colors, "Colors set must be not null" );
-        return new DefaultColoringAlgorithmsSelector<V, E, C>( graph, colors );
+        return new DefaultColoringAlgorithmsSelector<N, C>( graph, colors );
     }
 
 }

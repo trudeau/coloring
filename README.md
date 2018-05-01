@@ -12,7 +12,7 @@ import static org.nnsoft.trudeau.coloring.ColoringSolver.coloring;
 
 import java.util.Set;
 import org.nnsoft.trudeau.api.UndirectedGraph;
-import org.nnsoft.trudeau.coloring.ColoredVertices;
+import org.nnsoft.trudeau.coloring.ColoredNodes;
 
 …
 
@@ -21,14 +21,14 @@ Set<C> colors;
 
 // variables initialization omissed
 
-ColoredVertices<V, C> coloredVertices =
+ColoredNodes<V, C> coloredNodes =
     coloring( graph ).withColors( colors ).applyingGreedyAlgorithm();
 ```
 
 or the [Backtracking](https://secweb.cs.odu.edu/~zeil/cs361/web/website/Lectures/npprobs/pages/ar01s01s01.html) algorithm:
 
 ```
-ColoredVertices<V, C> coloredVertices =
+ColoredNodes<V, C> coloredNodes =
     coloring( graph ).withColors( colors ).applyingBackTrackingAlgorithm();
 
 ```
@@ -36,9 +36,9 @@ ColoredVertices<V, C> coloredVertices =
 the Backtracking agorithm also accepts a pre-defined subset of vertices already colored:
 
 ```
-ColoredVertices<V, C> predefinedColors = new ColoredVertices<V, C>();
+ColoredNodes<V, C> predefinedColors = new ColoredNodes<V, C>();
 predefinedColors.addColor( V, C );
 
-ColoredVertices<V, C> coloredVertices =
+ColoredNodes<V, C> coloredNodes =
     coloring( graph ).withColors( colors ).applyingBackTrackingAlgorithm( predefinedColors );
 ```

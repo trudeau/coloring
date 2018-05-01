@@ -1,7 +1,7 @@
 package org.nnsoft.trudeau.coloring;
 
 /*
- *   Copyright 2013 The Trudeau Project
+ *   Copyright 2013 - 2018 The Trudeau Project
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -27,25 +27,25 @@ import java.util.TreeMap;
 /**
  * 
  *
- * @param <V>
+ * @param <N>
  */
-final class UncoloredOrderedVertices<V>
-    implements Comparator<Integer>, Iterable<V>
+final class UncoloredOrderedNodes<N>
+    implements Comparator<Integer>, Iterable<N>
 {
 
-    private final Map<Integer, Set<V>> orderedVertices = new TreeMap<Integer, Set<V>>( this );
+    private final Map<Integer, Set<N>> orderedNodes = new TreeMap<Integer, Set<N>>( this );
 
-    public void addVertexDegree( V v, Integer degree )
+    public void addVertexDegree( N n, Integer degree )
     {
-        Set<V> vertices = orderedVertices.get( degree );
+        Set<N> nodes = orderedNodes.get( degree );
 
-        if ( vertices == null )
+        if ( nodes == null )
         {
-            vertices = new HashSet<V>();
+            nodes = new HashSet<N>();
         }
 
-        vertices.add( v );
-        orderedVertices.put( degree, vertices );
+        nodes.add( n );
+        orderedNodes.put( degree, nodes );
     }
 
     /**
@@ -56,16 +56,16 @@ final class UncoloredOrderedVertices<V>
         return o2.compareTo( o1 );
     }
 
-    public Iterator<V> iterator()
+    public Iterator<N> iterator()
     {
-        return new Iterator<V>()
+        return new Iterator<N>()
         {
 
-            private Iterator<Integer> keys = orderedVertices.keySet().iterator();
+            private Iterator<Integer> keys = orderedNodes.keySet().iterator();
 
-            private Iterator<V> pending = null;
+            private Iterator<N> pending = null;
 
-            private V next = null;
+            private N next = null;
 
             public boolean hasNext()
             {
@@ -80,20 +80,20 @@ final class UncoloredOrderedVertices<V>
                     {
                         return false;
                     }
-                    pending = orderedVertices.get( keys.next() ).iterator();
+                    pending = orderedNodes.get( keys.next() ).iterator();
                 }
 
                 next = pending.next();
                 return true;
             }
 
-            public V next()
+            public N next()
             {
                 if ( !hasNext() )
                 {
                     throw new NoSuchElementException();
                 }
-                V returned = next;
+                N returned = next;
                 next = null;
                 return returned;
             }
@@ -107,13 +107,13 @@ final class UncoloredOrderedVertices<V>
     }
 
     /**
-     * Returns the number of vertices degrees in the graph.
+     * Returns the number of nodes degrees in the graph.
      *
-     * @return the number of vertices degrees in the graph.
+     * @return the number of nodes degrees in the graph.
      */
     public int size()
     {
-        return orderedVertices.size();
+        return orderedNodes.size();
     }
 
 }

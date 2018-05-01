@@ -1,7 +1,7 @@
 package org.nnsoft.trudeau.coloring;
 
 /*
- *   Copyright 2013 The Trudeau Project
+ *   Copyright 2013 - 2018 The Trudeau Project
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -29,12 +29,9 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import org.nnsoft.trudeau.api.GraphException;
-import org.nnsoft.trudeau.api.VertexPair;
-import org.nnsoft.trudeau.inmemory.BaseMutableGraph;
-import org.nnsoft.trudeau.inmemory.UndirectedMutableGraph;
-import org.nnsoft.trudeau.inmemory.labeled.BaseLabeledEdge;
-import org.nnsoft.trudeau.inmemory.labeled.BaseLabeledVertex;
+import com.google.common.graph.EndpointPair;
+import com.google.common.graph.Graph;
+import com.google.common.graph.MutableGraph;
 
 /**
  * Abstract class used for test coloring.
@@ -73,19 +70,18 @@ abstract class AbstractColoringTest
     }
 
     /**
-     * This method checks if all connected vertices have different colors.
+     * This method checks if all connected nodes have different colors.
      *
      * @param g
-     * @param coloredVertices
+     * @param coloredNodes
      */
-    protected static <V, E, C> void checkColoring( UndirectedMutableGraph<V, E> g,
-                                                   ColoredVertices<V, C> coloredVertices )
+    protected static <N, C> void checkColoring( Graph<N> g,
+                                                ColoredNodes<N, C> coloredNodes )
     {
-        for ( E e : g.getEdges() )
+        for ( EndpointPair<N> e : g.edges() )
         {
-            VertexPair<V> vp = g.getVertices( e );
-            C h = coloredVertices.getColor( vp.getHead() );
-            C t = coloredVertices.getColor( vp.getTail() );
+            C h = coloredNodes.getColor( e.nodeU() );
+            C t = coloredNodes.getColor( e.nodeV() );
 
             assertNotNull( h );
             assertNotNull( t );
@@ -96,25 +92,25 @@ abstract class AbstractColoringTest
     /**
      * Create a Biparted graph
      *
-     * @param nVertices number of vertices
+     * @param nNodes number of nodes
      * @param g graph
      */
-    protected static void buildBipartedGraph( int nVertices, UndirectedMutableGraph<BaseLabeledVertex, BaseLabeledEdge> g )
+    protected static void buildBipartedGraph( int nNodes, MutableGraph<String> g )
     {
         // building Graph
-        for ( int i = 0; i < nVertices; i++ )
+        for ( int i = 0; i < nNodes; i++ )
         {
-            BaseLabeledVertex v = new BaseLabeledVertex( valueOf( i ) );
-            g.addVertex( v );
+            String v = valueOf( i );
+            g.addNode( v );
         }
 
-        List<BaseLabeledVertex> fistPartition = new ArrayList<BaseLabeledVertex>();
-        List<BaseLabeledVertex> secondPartition = new ArrayList<BaseLabeledVertex>();
+        List<String> fistPartition = new ArrayList<String>();
+        List<String> secondPartition = new ArrayList<String>();
 
         int count = 0;
-        for ( BaseLabeledVertex v1 : g.getVertices() )
+        for ( String v1 : g.nodes() )
         {
-            if ( count++ == nVertices / 2 )
+            if ( count++ == nNodes / 2 )
             {
                 break;
             }
@@ -122,61 +118,46 @@ abstract class AbstractColoringTest
         }
 
         count = 0;
-        for ( BaseLabeledVertex v2 : g.getVertices() )
+        for ( String v2 : g.nodes() )
         {
-            if ( count++ < nVertices / 2 )
+            if ( count++ < nNodes / 2 )
             {
                 continue;
             }
             secondPartition.add( v2 );
         }
 
-        for ( BaseLabeledVertex v1 : fistPartition )
+        for ( String v1 : fistPartition )
         {
-            for ( BaseLabeledVertex v2 : secondPartition )
+            for ( String v2 : secondPartition )
             {
                 if ( !v1.equals( v2 ) )
                 {
-                    try
-                    {
-                        g.addEdge( v1, new BaseLabeledEdge( format( "%s -> %s", v1, v2 ) ), v2 );
-                    }
-                    catch ( GraphException e )
-                    {
-                        // ignore
-                    }
+                    g.putEdge( v1, v2 );
                 }
             }
         }
     }
 
-    protected static void buildCrownGraph( int nVertices, UndirectedMutableGraph<BaseLabeledVertex, BaseLabeledEdge> g )
+    protected static void buildCrownGraph( int nNodes, MutableGraph<String> g )
     {
-        List<BaseLabeledVertex> tmp = new ArrayList<BaseLabeledVertex>();
+        List<String> tmp = new ArrayList<String>();
 
-        for ( int i = 0; i < nVertices; i++ )
+        for ( int i = 0; i < nNodes; i++ )
         {
-            BaseLabeledVertex v = new BaseLabeledVertex( valueOf( i ) );
-            g.addVertex( v );
+            String v = valueOf( i );
+            g.addNode( v );
             tmp.add( v );
         }
 
-        for ( int i = 0; i < nVertices; i++ )
+        for ( int i = 0; i < nNodes; i++ )
         {
             int next = i + 1;
-            if ( i == ( nVertices - 1 ) )
+            if ( i == ( nNodes - 1 ) )
             {
                 next = 0;
             }
-            BaseLabeledEdge e = new BaseLabeledEdge( format( "%s -> %s", i, next ) );
-            try
-            {
-                g.addEdge( tmp.get( i ), e, tmp.get( next ) );
-            }
-            catch ( GraphException ge )
-            {
-                // ignore
-            }
+            g.putEdge( tmp.get( i ), tmp.get( next ) );
         }
     }
 
@@ -185,16 +166,16 @@ abstract class AbstractColoringTest
      *
      * @return
      */
-    protected static BaseLabeledVertex[][] buildSudokuGraph( UndirectedMutableGraph<BaseLabeledVertex, BaseLabeledEdge> sudoku )
+    protected static String[][] buildSudokuGraph( MutableGraph<String> sudoku )
     {
-        BaseLabeledVertex[][] grid = new BaseLabeledVertex[9][9];
+        String[][] grid = new String[9][9];
         // build sudoku grid.
         for ( int row = 0; row < 9; row++ )
         {
             for ( int col = 0; col < 9; col++ )
             {
-                grid[row][col] = new BaseLabeledVertex( format( "%s, %s", row, col ) );
-                sudoku.addVertex( grid[row][col] );
+                grid[row][col] = format( "[%s, %s]", row, col );
+                sudoku.addNode( grid[row][col] );
             }
         }
 
@@ -206,7 +187,7 @@ abstract class AbstractColoringTest
         {
             for ( int cof = 0; cof < 3; cof++ )
             {
-                List<BaseLabeledVertex> boxes = new ArrayList<BaseLabeledVertex>();
+                List<String> boxes = new ArrayList<String>();
                 for ( int row = rowsOffsets[rof]; row < 3 + rowsOffsets[rof]; row++ )
                 {
                     for ( int col = colsOffsets[cof]; col < 3 + colsOffsets[cof]; col++ )
@@ -215,22 +196,13 @@ abstract class AbstractColoringTest
                     }
                 }
 
-                for ( BaseLabeledVertex v1 : boxes )
+                for ( String v1 : boxes )
                 {
-                    for ( BaseLabeledVertex v2 : boxes )
+                    for ( String v2 : boxes )
                     {
-
-                        BaseLabeledEdge e = new BaseLabeledEdge( format( "%s -> %s", v1, v2 ) );
                         if ( !v1.equals( v2 ) )
                         {
-                            try
-                            {
-                                sudoku.addEdge( v1, e, v2 );
-                            }
-                            catch ( GraphException ge )
-                            {
-                                // ignore
-                            }
+                            sudoku.putEdge( v1, v2 );
                         }
                     }
                 }
@@ -244,20 +216,12 @@ abstract class AbstractColoringTest
             {
                 for ( int h = 0; h < 9; h++ )
                 {
-                    BaseLabeledVertex v1 = grid[j][i];
-                    BaseLabeledVertex v2 = grid[j][h];
+                    String v1 = grid[j][i];
+                    String v2 = grid[j][h];
 
                     if ( !v1.equals( v2 ) )
                     {
-                        BaseLabeledEdge e = new BaseLabeledEdge( format( "%s -> %s", v1, v2 ) );
-                        try
-                        {
-                            sudoku.addEdge( v1, e, v2 );
-                        }
-                        catch ( GraphException ge )
-                        {
-                            // ignore
-                        }
+                        sudoku.putEdge( v1, v2 );
                     }
 
                 }
@@ -271,20 +235,12 @@ abstract class AbstractColoringTest
             {
                 for ( int h = 0; h < 9; h++ )
                 {
-                    BaseLabeledVertex v1 = grid[i][j];
-                    BaseLabeledVertex v2 = grid[h][j];
+                    String v1 = grid[i][j];
+                    String v2 = grid[h][j];
 
                     if ( !v1.equals( v2 ) )
                     {
-                        BaseLabeledEdge e = new BaseLabeledEdge( format( "%s -> %s", v1, v2 ) );
-                        try
-                        {
-                            sudoku.addEdge( v1, e, v2 );
-                        }
-                        catch ( GraphException ge )
-                        {
-                            // ignore
-                        }
+                        sudoku.putEdge( v1, v2 );
                     }
 
                 }
@@ -293,37 +249,28 @@ abstract class AbstractColoringTest
         return grid;
     }
 
-
-
     /**
-     * Creates a complete graph with nVertices
+     * Creates a complete graph with nNodes
      *
-     * @param nVertices number of vertices
+     * @param nNodes number of nodes
      * @param g graph
      */
-    protected static void buildCompleteGraph( int nVertices, BaseMutableGraph<BaseLabeledVertex, BaseLabeledEdge> g )
+    protected static void buildCompleteGraph( int nNodes, MutableGraph<String> g )
     {
         // building Graph
-        for ( int i = 0; i < nVertices; i++ )
+        for ( int i = 0; i < nNodes; i++ )
         {
-            BaseLabeledVertex v = new BaseLabeledVertex( valueOf( i ) );
-            g.addVertex( v );
+            String v = valueOf( i );
+            g.addNode( v );
         }
 
-        for ( BaseLabeledVertex v1 : g.getVertices() )
+        for ( String v1 : g.nodes() )
         {
-            for ( BaseLabeledVertex v2 : g.getVertices() )
+            for ( String v2 : g.nodes() )
             {
                 if ( !v1.equals( v2 ) )
                 {
-                    try
-                    {
-                        g.addEdge( v1, new BaseLabeledEdge( format( "%s -> %s", v1, v2 ) ), v2 );
-                    }
-                    catch ( GraphException e )
-                    {
-                        // ignore
-                    }
+                    g.putEdge( v1, v2 );
                 }
             }
         }
